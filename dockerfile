@@ -9,6 +9,7 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY scripts/ scripts/
+COPY housing_linear.joblib housing_linear.joblib
 
 ENV PYTHONPATH=/app
 

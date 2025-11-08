@@ -7,6 +7,7 @@ on:
       - 'tests/**/*'
       - '.github/workflows/test_workflow.yaml'
       - 'requirements.txt'
+      
   jobs:
     test_job:
       runs-on: ubuntu-latest

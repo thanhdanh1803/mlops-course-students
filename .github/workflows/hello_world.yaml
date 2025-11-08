@@ -8,11 +8,9 @@ on:
             - 'scripts/session_6/hello_new_pr.txt'
     workflow_dispatch:
         inputs:
-            message:
-                description: The message to print
-                required: true
-                default: "Hello, World!"
-
+            runner:
+                description: "The runner to use"
+                required: true            
 jobs:
     hello-world-job:
         runs-on: ubuntu-latest
@@ -27,5 +25,5 @@ jobs:
                 elif [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
                   cat scripts/session_6/hello_new_pr.txt
                 else
-                  echo ${{ inputs.message }}
+                  echo ${{ inputs.runner }}
                 fi

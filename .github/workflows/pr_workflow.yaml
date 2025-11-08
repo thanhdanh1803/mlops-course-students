@@ -4,7 +4,7 @@ on:
         paths:
             - 'scripts/**/*'
             - 'tests/**/*'
-            - 'pr-workflow.yaml'
+            - '.github/workflows/pr_workflow.yaml'
             - 'requirements.txt'
 
 jobs:

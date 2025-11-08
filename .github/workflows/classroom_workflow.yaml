@@ -1,0 +1,22 @@
+name: Classroom Workflow
+
+on:
+  push:
+    paths:
+      - 'scripts/session_6/hello_world.txt'
+  pull_request:
+    paths:
+      - 'scripts/session_6/pull_request_test.txt'
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: "Who runs this workflow?"
+        required: true
+jobs:
+  classroom_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Print latest content
+        run: echo ${{ inputs.runner }}

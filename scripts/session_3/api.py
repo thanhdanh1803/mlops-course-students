@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 
 import uvicorn
@@ -49,4 +50,5 @@ def calculate(request: CalculateRequest) -> CalculateResponse:
 
 
 if __name__ == "__main__":
-    uvicorn.run("api:app", host="0.0.0.0", port=3000, reload=True)
+    port = os.getenv("HOST_PORT", 8080)
+    uvicorn.run("api:app", host="0.0.0.0", port=port, reload=True)

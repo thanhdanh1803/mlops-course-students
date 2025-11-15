@@ -19,4 +19,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Print latest content
-        run: echo ${{ inputs.runner }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            cat scripts/session_6/hello_world.txt
+          elif [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            cat scripts/session_6/pull_request_test.txt
+          else
+            echo ${{ inputs.runner }}
+          fi

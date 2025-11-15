@@ -1,0 +1,86 @@
+name: test workflow
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/**/*'
+      - 'tests/**/*'
+      - 'requirements.txt'
+      - '.github/workflows/test_workflow.yaml'
+  push:
+    branches:
+      - main
+
+jobs:
+  test_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install python
+        uses: actions/setup-python@v4
+      - name: Setup cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run tests
+        run: pytest --cov
+
+  deploy_job_pr:
+    needs: test_job
+    if: startsWith(github.ref, 'refs/pull/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          context: .
+          tags: docker.io/${{ vars.DOCKER_USERNAME }}/mlops-course-app:PULL-${{ github.event.number }}
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - name: Deploy to Google Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v3
+        with:
+          service: 'mlops-course-app-pr'
+          image: 'docker.io/${{ vars.DOCKER_USERNAME }}/mlops-course-app:PULL-${{ github.event.number }}'
+  deploy_main:
+    needs: test_job
+    if: startsWith(github.ref, 'refs/heads/main')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          context: .
+          # get 9 first characters of the sha
+          tags: docker.io/${{ vars.DOCKER_USERNAME }}/mlops-course-app:${GITHUB_SHA:0:9}
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - name: Deploy to Google Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v3
+        with:
+          service: 'mlops-course-app'
+          image: 'docker.io/${{ vars.DOCKER_USERNAME }}/mlops-course-app:${GITHUB_SHA:0:9}'

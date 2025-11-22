@@ -18,7 +18,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # --- 1. Setup & Model Training (Simulation) ---
-# In a real app, load a pickled model. Here, we train on startup for simplicity.
+# TODO: In a real app, load a pickled model. Here, we train on startup for simplicity.
 data = load_iris(as_frame=True)
 df_reference = data.frame
 
@@ -41,6 +41,9 @@ instrumentator = Instrumentator().instrument(app).expose(app)
 
 
 # --- 2.5. Automatic Drift Detection ---
+# TODO: In a real app, we would use a database to store the production data.
+# TODO: We would also use a more sophisticated drift detection algorithm.
+# TODO: We would also use a more sophisticated drift detection algorithm.
 def generate_drift_report_background():
     """
     Background task to automatically generate drift reports.
@@ -105,6 +108,7 @@ def generate_drift_report_background():
 
 
 # Initialize and start the background scheduler
+# TODO: In a real app, we would use Airflow or Celery to schedule the background tasks.
 scheduler = BackgroundScheduler()
 # Run drift detection every 5 minutes (300 seconds)
 # Adjust the interval based on your needs:
@@ -159,6 +163,7 @@ async def predict(features: dict):
         # We add the prediction to the input features to track concept drift if we had labels
         log_entry = features.copy()
         log_entry["prediction"] = int(prediction_idx)
+        # TODO: In a real app, we would use a database to store the production data.
         production_data.append(log_entry)
 
         # Keep only last 500 items to manage memory
@@ -174,6 +179,7 @@ async def predict(features: dict):
         return {"error": str(e)}
 
 
+# TODO: In a real production app, we would not need this endpoint. Instead, we would use Airflow or Celery to generate the reports.
 @app.get("/monitor/generate_report")
 async def generate_report():
     """
@@ -247,6 +253,7 @@ async def generate_report():
         return {"error": str(e)}
 
 
+# TODO: In a real production app, we would not need this endpoint. Instead, we would use Airflow or Celery to generate the reports.
 @app.get("/monitor/status")
 async def monitor_status():
     """
@@ -303,6 +310,7 @@ async def monitor_status():
     }
 
 
+# TODO: In a real production app, we would not need this endpoint. Instead, we would use Airflow or Celery to generate the reports.
 @app.post("/monitor/trigger_now")
 async def trigger_drift_detection_now():
     """

@@ -208,4 +208,4 @@ __marimo__/
 *.joblib
 mlruns/
 
-session_9/reports/
+scripts/session_9/reports/

@@ -12,3 +12,4 @@ pytest==8.4.2
 pytest-cov==7.0.0
 prometheus-fastapi-instrumentator==7.1.0
 evidently
+apscheduler==3.10.4

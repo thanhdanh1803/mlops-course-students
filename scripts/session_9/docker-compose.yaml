@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # The ML Prediction Service
+  ml_service:
+    build: .
+    container_name: ml_service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./reports:/app/reports # Share reports with host/other containers
+    networks:
+      - monitoring
+    logging:
+      driver: "json-file"
+      options:
+        tag: "{{.Name}}"
+
+  # Prometheus: Collects metrics from ml_service
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus:/etc/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+
+  # Loki: Log aggregation system
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - monitoring
+    volumes:
+      - loki-storage:/loki
+
+  # Promtail: Log collector that sends logs to Loki
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./promtail:/etc/promtail
+    command: -config.file=/etc/promtail/promtail-config.yaml
+    networks:
+      - monitoring
+    depends_on:
+      - loki
+
+  # Grafana: Visualizes the metrics and logs
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-storage:/var/lib/grafana # Persist Grafana data
+    networks:
+      - monitoring
+    depends_on:
+      - prometheus
+      - loki
+
+  # Nginx: Simple server to view Evidently HTML reports
+  report_server:
+    image: nginx:alpine
+    container_name: report_viewer
+    ports:
+      - "8080:80"
+    volumes:
+      - ./reports:/usr/share/nginx/html:ro
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  grafana-storage: # Named volume for Grafana data persistence
+  loki-storage: # Named volume for Loki data persistence
